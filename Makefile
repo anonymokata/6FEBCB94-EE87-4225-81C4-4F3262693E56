@@ -9,10 +9,10 @@ run: rpn
 	./rpn
 
 rpn: rpn_lib.c rpn.c $(HDRS)
-	gcc rpn_lib.c rpn.c -o rpn
+	gcc rpn_lib.c rpn.c -g -o rpn
 
 rpn_tests: rpn_lib.c tests.c $(HDRS)
-	gcc rpn_lib.c tests.c `pkg-config --cflags --libs check` -o rpn_tests
+	gcc rpn_lib.c tests.c `pkg-config --cflags --libs check` -g -o rpn_tests
 	
 clean:
 	rm rpn rpn_tests

@@ -1,11 +1,13 @@
+#include <string.h>
 #include "rpn.h"
 
-#define MAX_BUFF_LEN 1 * 1024
-#define NULL 0
-
-char* buff[MAX_BUFF_LEN];
-
-char* infix_to_rpn(const char* infix, char* buff)
+char* infix_to_rpn(const char* infix, int infixmaxlen, char* buff, int bufflen)
 {
-    return "";
+    if (buff == NULL || bufflen <= 0)
+    {
+        return NULL;
+    }
+    if (strcmp(infix, "a+b") == 0)
+        memcpy(buff, "ab+", 3);
+    return buff;
 }

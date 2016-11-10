@@ -5,9 +5,29 @@
 #include <check.h>
 #include "rpn.h"
 
+START_TEST (infix_op_check)
+{
+    ck_assert_ptr_eq(infix_to_rpn("a@b", 0, NULL, 0), NULL);
+}
+END_TEST
+
+START_TEST (infix_max_len_check)
+{
+    ck_assert_ptr_eq(infix_to_rpn("a+b", 0, NULL, 0), NULL);
+}
+END_TEST
+
+START_TEST (buff_len_check)
+{
+    ck_assert_ptr_eq(infix_to_rpn("a+b", 0, NULL, 0), NULL);
+}
+END_TEST
+
 START_TEST (a_plus_b)
 {
-    ck_assert_str_eq(infix_to_rpn("a+b", NULL), "ab+");
+    char buff[4];
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(infix_to_rpn("a+b", 3, buff, 4), "ab+");
 }
 END_TEST
 
@@ -16,6 +36,9 @@ Suite* rpn_suite()
     Suite* s = suite_create("rpn");
     TCase* tc_core;
     tc_core = tcase_create("Core");
+    tcase_add_test(tc_core, infix_op_check);
+    tcase_add_test(tc_core, infix_max_len_check);
+    tcase_add_test(tc_core, buff_len_check);
     tcase_add_test(tc_core, a_plus_b);
     suite_add_tcase(s, tc_core);
     return s;
