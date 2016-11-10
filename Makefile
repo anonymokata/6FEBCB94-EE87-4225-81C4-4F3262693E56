@@ -1,10 +1,16 @@
-all: rpn
+all: Makefile rpn rpn_tests
 
-test:
-	rpn -test
+test: rpn_tests
+	./rpn_tests
 
-rpn: Makefile rpn.c
-	gcc rpn.c test.c -o rpn
+run: rpn
+	./rpn
 
+rpn: rpn_lib.c rpn.c
+	gcc rpn_lib.c rpn.c -o rpn
+
+rpn_tests: rpn_lib.c tests.c
+	gcc rpn_lib.c tests.c `pkg-config --cflags --libs check` -o rpn_tests
+	
 clean:
-	rm rpn
+	rm rpn rpn_tests
