@@ -5,9 +5,9 @@
 #include <check.h>
 #include "rpn.h"
 
-START_TEST (test_name)
+START_TEST (a_plus_b)
 {
-    ck_assert_int_eq(1, 2);
+    ck_assert_str_eq(infix_to_rpn("a+b", NULL), "ab+");
 }
 END_TEST
 
@@ -16,7 +16,7 @@ Suite* rpn_suite()
     Suite* s = suite_create("rpn");
     TCase* tc_core;
     tc_core = tcase_create("Core");
-    tcase_add_test(tc_core, test_name);
+    tcase_add_test(tc_core, a_plus_b);
     suite_add_tcase(s, tc_core);
     return s;
 }
