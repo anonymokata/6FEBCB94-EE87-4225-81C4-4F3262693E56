@@ -3,6 +3,7 @@
 #include <check_stdint.h>
 #include <sys/types.h>
 #include <check.h>
+#include "rpn.h"
 
 START_TEST (test_name)
 {
