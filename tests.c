@@ -39,11 +39,27 @@ START_TEST(a_plus_b_minus_c)
 }
 END_TEST
 
+START_TEST(a_plus_p_b_minus_c_p)
+{
+    char buff[128];
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(infix_to_rpn("a+(b-c)", 7, buff, sizeof(buff)), "abc-+");
+}
+END_TEST
+
 START_TEST(a_plus_b_minus_c_minus_d)
 {
     char buff[128];
     memset(buff, 0, sizeof(buff));
     ck_assert_str_eq(infix_to_rpn("a+b-c-d", 7, buff, sizeof(buff)), "abcd--+");
+}
+END_TEST
+
+START_TEST(p_a_plus_b_p_minus_c)
+{
+    char buff[128];
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(infix_to_rpn("(a+b)-c", 7, buff, sizeof(buff)), "ab+c-");
 }
 END_TEST
 
@@ -57,7 +73,9 @@ Suite *rpn_suite()
     tcase_add_test(tc_core, buff_len_check);
     tcase_add_test(tc_core, a_plus_b);
     tcase_add_test(tc_core, a_plus_b_minus_c);
+    tcase_add_test(tc_core, a_plus_p_b_minus_c_p);
     tcase_add_test(tc_core, a_plus_b_minus_c_minus_d);
+    tcase_add_test(tc_core, p_a_plus_b_p_minus_c);
     suite_add_tcase(s, tc_core);
     return s;
 }

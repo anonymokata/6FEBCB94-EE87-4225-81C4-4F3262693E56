@@ -6,16 +6,6 @@ typedef int bool;
     type name[size];           \
     memset(name, 0, size);
 
-#define PUSH(var, index, value) \
-    var[index++] = value;
-
-#define PUSH_DEREF_INDEX(var, index, value) \
-    var[*index] = value;                    \
-    (*index)++;
-
-#define POP_FROM_START(var, index) \
-    var[index++]
-
 #define true 1
 #define false 0
 #define null NULL
@@ -35,6 +25,16 @@ bool valid_operator(char c)
     return c == '^' || c == '/' || c == '*' || c == '-' || c == '+';
 }
 
+bool valid_open_paren(char c)
+{
+    return c == '(';
+}
+
+bool valid_close_paren(char c)
+{
+    return c == ')';
+}
+
 byte find_op_value(char op)
 {
     for (int i = 0; i < sizeof(operator_lookup); i++)
@@ -52,54 +52,61 @@ bool op_less_than(char op0, char op1)
     return op0val - op1val < 0;
 }
 
-void push_operator(char *operators, int *index, char op)
+int opindex = 0;
+char opbuff[128];//TODO: remove global
+void push_op(char op)
 {
-    int old_index = *index - 1;
-    char old_op = operators[old_index];
-    if (*index > 0 && op_less_than(op, operators[old_op]))
+    if (opindex > 0 && opbuff[opindex - 1] != '(' && !op_less_than(op, opbuff[opindex - 1]))
     {
-        operators[old_index] = op;
-        PUSH_DEREF_INDEX(operators, index, old_op);
+        opbuff[opindex] = opbuff[opindex - 1];
+        opbuff[opindex - 1] = op;
+        opindex++;
     }
     else
     {
-        PUSH_DEREF_INDEX(operators, index, op);
+        opbuff[opindex++] = op;
+    }
+}
+
+void infix_to_rpn_impl(const char *infix, int *index, char *buff, int *buffindex)
+{
+    char inf = infix[(*index)++];
+    if (valid_operand(inf))
+    {
+        buff[(*buffindex)++] = inf;
+    }
+    else if (valid_operator(inf))
+    {
+        push_op(inf);
+    }
+    else if (valid_open_paren(inf))
+    {
+        opbuff[opindex++] = '(';
+    }
+    else if (valid_close_paren(inf))
+    {
+        do
+        {
+            if (opbuff[opindex - 1] == '(')
+                break;
+            buff[(*buffindex)++] = opbuff[opindex - 1];
+        } while (opbuff[opindex--]);
     }
 }
 
 char *infix_to_rpn(const char *infix, int infixmaxlen, char *buff, int bufflen)
 {
-    if (buff == null || bufflen <= 0)
+    memset(opbuff, 0, sizeof(opbuff));
+    int iindex = 0, buffindex = 0;
+    while (infix[iindex] && iindex < infixmaxlen)
     {
-        return null;
+        infix_to_rpn_impl(infix, &iindex, buff, &buffindex);
     }
-    RAII(char, operands, 1 * 128);
-    RAII(char, operators, 1 * 128);
-    int opdIndexMax = 0, oprIndexMax = 0;
-    for (int i = 0; i < infixmaxlen && infix[i] != '\0'; i++)
+    while (opindex > 0)
     {
-        char inf = infix[i];
-        if (valid_operand(inf))
-        {
-            PUSH(operands, opdIndexMax, inf);
-        }
-        else if (valid_operator(inf))
-        {
-            push_operator(operators, &oprIndexMax, inf);
-        }
-        else
-            return null;
+        if (opbuff[opindex - 1] != '(')
+            buff[buffindex++] = opbuff[opindex - 1];
+        opindex--;
     }
-    int buffIndex = 0;
-    int opdIndex = 0;
-    do
-    {
-        PUSH(buff, buffIndex, POP_FROM_START(operands, opdIndex));
-    } while (opdIndex < opdIndexMax);
-    int oprIndex = 0;
-    do
-    {
-        PUSH(buff, buffIndex, POP_FROM_START(operators, oprIndex));
-    } while (oprIndex < oprIndexMax);
     return buff;
 }
