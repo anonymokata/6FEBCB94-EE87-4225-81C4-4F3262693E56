@@ -92,21 +92,47 @@ void swap(char *a, char *b)
     *b = c;
 }
 
+void handle_ops(char op, char *buff, int *buffindex, char *scratchbuff, int *scratchbufflen)
+{
+    if (*scratchbufflen == 0 || (*scratchbufflen > 0 && op_less_than(op, peek(scratchbuff, scratchbufflen))))
+    {
+        push(scratchbuff, scratchbufflen, op);
+    }
+    else if (*scratchbufflen > 0 && !op_less_than(op, peek(scratchbuff, scratchbufflen)))
+    {
+        push(scratchbuff, scratchbufflen, op);
+        while (*scratchbufflen > 1 && scratchbuff[*scratchbufflen - 2] != '(' && op_less_than(scratchbuff[*scratchbufflen - 2], scratchbuff[*scratchbufflen - 1]))
+        {
+            swap(&scratchbuff[*scratchbufflen - 1], &scratchbuff[*scratchbufflen - 2]);
+            push(buff, buffindex, pop(scratchbuff, scratchbufflen));
+        }
+    }
+    else
+    {
+        push(scratchbuff, scratchbufflen, op);
+    }
+}
+
+void unwind(char *buff, int *buffindex, char *scratchbuff, int *scratchbufflen)
+{
+    char op;
+    do
+    {
+        op = pop(scratchbuff, scratchbufflen);
+        if (op != '(')
+        {
+            push(buff, buffindex, op);
+        }
+    } while (op != '(' && *scratchbufflen > 0);
+}
+
 bool infix_to_rpn_impl(const char *infix, int infixmaxlen, int index, char *buff, int *buffindex, char *scratchbuff, int *scratchbufflen)
 {
     if (infix[index] == '\0' || index >= infixmaxlen)
     {
         if (*scratchbufflen > 0)
         {
-            char op;
-            do
-            {
-                op = pop(scratchbuff, scratchbufflen);
-                if (op != '(')
-                {
-                    push(buff, buffindex, op);
-                }
-            } while (op != '(' && *scratchbufflen > 0);
+            unwind(buff, buffindex, scratchbuff, scratchbufflen);
         }
         return true;
     }
@@ -114,55 +140,22 @@ bool infix_to_rpn_impl(const char *infix, int infixmaxlen, int index, char *buff
     if (valid_operand(inf))
     {
         push(buff, buffindex, inf);
-        bool ret = infix_to_rpn_impl(infix, infixmaxlen, index + 1, buff, buffindex, scratchbuff, scratchbufflen);
-        if (!ret)
-            return ret;
     }
     else if (valid_operator(inf))
     {
-        if (*scratchbufflen == 0 || (*scratchbufflen > 0 && op_less_than(inf, peek(scratchbuff, scratchbufflen))))
-        {
-            push(scratchbuff, scratchbufflen, inf);
-        }
-        else if (*scratchbufflen > 0 && !op_less_than(inf, peek(scratchbuff, scratchbufflen)))
-        {
-            push(scratchbuff, scratchbufflen, inf);
-            while (*scratchbufflen > 1 && scratchbuff[*scratchbufflen - 2] != '(' && op_less_than(scratchbuff[*scratchbufflen - 2], scratchbuff[*scratchbufflen - 1]))
-            {
-                swap(&scratchbuff[*scratchbufflen - 1], &scratchbuff[*scratchbufflen - 2]);
-                push(buff, buffindex, pop(scratchbuff, scratchbufflen));
-            }
-        }
-        else
-        {
-            push(scratchbuff, scratchbufflen, inf);
-        }
-        bool ret = infix_to_rpn_impl(infix, infixmaxlen, index + 1, buff, buffindex, scratchbuff, scratchbufflen);
-        if (!ret)
-            return ret;
+        handle_ops(inf, buff, buffindex, scratchbuff, scratchbufflen);
     }
     else if (valid_open_paren(inf))
     {
         push(scratchbuff, scratchbufflen, inf);
-        bool ret = infix_to_rpn_impl(infix, infixmaxlen, index + 1, buff, buffindex, scratchbuff, scratchbufflen);
-        if (!ret)
-            return ret;
     }
     else if (valid_close_paren(inf))
     {
-        char op;
-        do
-        {
-            op = pop(scratchbuff, scratchbufflen);
-            if (op != '(')
-            {
-                push(buff, buffindex, op);
-            }
-        } while (op != '(' && *scratchbufflen > 0);
-        bool ret = infix_to_rpn_impl(infix, infixmaxlen, index + 1, buff, buffindex, scratchbuff, scratchbufflen);
-        if (!ret)
-            return ret;
+        unwind(buff, buffindex, scratchbuff, scratchbufflen);
     }
+    bool ret = infix_to_rpn_impl(infix, infixmaxlen, index + 1, buff, buffindex, scratchbuff, scratchbufflen);
+    if (!ret)
+        return ret;
     return true;
 }
 
