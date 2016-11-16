@@ -85,20 +85,6 @@ char pop(char *buff, int *index)
     return 0;
 }
 
-void push_op(char *buff, int *index, char op)
-{
-    if (*index > 0 && buff[*index - 1] != '(' && !op_less_than(op, buff[*index - 1]))
-    {
-        buff[*index] = buff[*index - 1];
-        buff[*index - 1] = op;
-        (*index)++;
-    }
-    else
-    {
-        push(buff, index, op);
-    }
-}
-
 void swap(char *a, char *b)
 {
     char c = *a;
@@ -157,7 +143,7 @@ bool infix_to_rpn_impl(const char *infix, int infixmaxlen, int index, char *buff
     }
     else if (valid_open_paren(inf))
     {
-        push_op(scratchbuff, scratchbufflen, inf);
+        push(scratchbuff, scratchbufflen, inf);
         bool ret = infix_to_rpn_impl(infix, infixmaxlen, index + 1, buff, buffindex, scratchbuff, scratchbufflen);
         if (!ret)
             return ret;
