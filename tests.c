@@ -94,6 +94,13 @@ START_TEST(p_p_v_div_w_p_pow_x_p_mul_p_y_sub_z_p)
 }
 END_TEST
 
+START_TEST(the_big_one)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(infix_to_rpn("(a+g)*(((b-a)+c)^(c+(e*(d^f))))", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "ag+ba-c+cedf^*+^*");
+}
+END_TEST
+
 Suite *rpn_suite()
 {
     Suite *s = suite_create("rpn");
@@ -112,6 +119,7 @@ Suite *rpn_suite()
     tcase_add_test(tc_core, l_div_m_pow_n_mult_o_minus_p);
     tcase_add_test(tc_core, l_div_m_pow_n_mult_o_minus_p_with_parens);
     tcase_add_test(tc_core, p_p_v_div_w_p_pow_x_p_mul_p_y_sub_z_p);
+    tcase_add_test(tc_core, the_big_one);
 
     suite_add_tcase(s, tc_core);
     return s;
