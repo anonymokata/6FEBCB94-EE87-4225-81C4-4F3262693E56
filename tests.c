@@ -80,6 +80,13 @@ START_TEST(l_div_m_pow_n_mult_o_minus_p)
 }
 END_TEST
 
+START_TEST(l_div_m_pow_n_mult_o_minus_p_with_parens)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(infix_to_rpn("((l/(m^n))*o)-p", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "lmn^/o*p-");
+}
+END_TEST
+
 Suite *rpn_suite()
 {
     Suite *s = suite_create("rpn");
@@ -96,6 +103,8 @@ Suite *rpn_suite()
     tcase_add_test(tc_core, abcdef);
     tcase_add_test(tc_core, abcdef_short);
     tcase_add_test(tc_core, l_div_m_pow_n_mult_o_minus_p);
+    tcase_add_test(tc_core, l_div_m_pow_n_mult_o_minus_p_with_parens);
+
     suite_add_tcase(s, tc_core);
     return s;
 }
