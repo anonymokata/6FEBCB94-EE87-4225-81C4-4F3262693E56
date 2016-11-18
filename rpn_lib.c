@@ -94,11 +94,7 @@ void swap(char *a, char *b)
 
 void handle_ops(char op, char *buff, int *buffindex, char *scratchbuff, int *scratchbufflen)
 {
-    if (*scratchbufflen == 0 || (*scratchbufflen > 0 && op_less_than(op, peek(scratchbuff, scratchbufflen))))
-    {
-        push(scratchbuff, scratchbufflen, op);
-    }
-    else if (*scratchbufflen > 0 && !op_less_than(op, peek(scratchbuff, scratchbufflen)))
+    if (*scratchbufflen > 0 && !op_less_than(op, peek(scratchbuff, scratchbufflen)))
     {
         push(scratchbuff, scratchbufflen, op);
         while (*scratchbufflen > 1 && scratchbuff[*scratchbufflen - 2] != '(' && op_less_than(scratchbuff[*scratchbufflen - 2], scratchbuff[*scratchbufflen - 1]))
@@ -182,4 +178,44 @@ char *infix_to_rpn(const char *infix, int infixmaxlen, char *buff, int bufflen, 
         free(scratchbuff);
     }
     return ret ? buff : null;
+}
+
+bool rpn_to_infix_impl(const char *rpn, int rpnmaxlen, int index, char *buff, int *buffindex, char *scratchbuff, int *scratchbufflen)
+{
+    if (rpn[index] == '\0' || index >= rpnmaxlen)
+    {
+        if (*scratchbufflen > 0)
+        {
+            push(buff, buffindex, ')');
+        }
+        return true;
+    }
+    char r = rpn[index];
+    if (valid_operand(r))
+    {
+        if (index < rpnmaxlen && rpn[index + 1] != '\0' && valid_operand(rpn[index + 1]))
+        {
+            push(buff, buffindex, '(');
+        }
+        push(buff, buffindex, r);
+    }
+    else if (valid_operator(r))
+    {
+        push(buff, buffindex, r);
+        swap(&buff[*buffindex - 1], &buff[*buffindex - 2]);
+        push(buff, buffindex, ')');
+    }
+    bool ret = rpn_to_infix_impl(rpn, rpnmaxlen, index + 1, buff, buffindex, scratchbuff, scratchbufflen);
+    if (!ret)
+        return ret;
+    return true;
+}
+
+char *rpn_to_infix(const char *rpn, int rpnmaxlen, char *buff, int bufflen, char *scratchbuff, int scratchbufflen)
+{
+    int sbl = 0;
+    int bl = 0;
+    bool ret = rpn_to_infix_impl(rpn, rpnmaxlen, 0, buff, &bl, scratchbuff, &sbl);
+
+    return buff;
 }

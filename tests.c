@@ -101,6 +101,13 @@ START_TEST(the_big_one)
 }
 END_TEST
 
+START_TEST(inf_a_plus_b)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(rpn_to_infix("ab+", 3, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "(a+b)");
+}
+END_TEST
+
 Suite *rpn_suite()
 {
     Suite *s = suite_create("rpn");
@@ -125,12 +132,30 @@ Suite *rpn_suite()
     return s;
 }
 
+Suite *inf_suite()
+{
+    Suite *s = suite_create("inf");
+    TCase *tc_core;
+    tc_core = tcase_create("Core");
+    tcase_add_test(tc_core, inf_a_plus_b);
+
+    suite_add_tcase(s, tc_core);
+    return s;
+}
+
 int main()
 {
-    Suite *s = rpn_suite();
+    Suite *s = rpn_suite();//FIXME: free
     SRunner *sr = srunner_create(s);
     srunner_run_all(sr, CK_NORMAL);
     int number_failed = srunner_ntests_failed(sr);
     srunner_free(sr);
-    return number_failed;
+    
+    Suite *inf_s = inf_suite();//FIXME: free
+    SRunner *inf_sr = srunner_create(inf_s);
+    srunner_run_all(inf_sr, CK_NORMAL);
+    int inf_number_failed = srunner_ntests_failed(inf_sr);
+    srunner_free(inf_sr);
+    
+    return number_failed + inf_number_failed;
 }
