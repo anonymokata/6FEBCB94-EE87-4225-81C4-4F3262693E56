@@ -104,7 +104,21 @@ END_TEST
 START_TEST(inf_a_plus_b)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("ab+", 3, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "(a+b)");
+    ck_assert_str_eq(rpn_to_infix("ab+", 3, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "a+b");
+}
+END_TEST
+
+START_TEST(inf_a_plus_b_plus_c)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(rpn_to_infix("abc++", 5, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "a+b+c");
+}
+END_TEST
+
+START_TEST(inf_a_plus_b_minus_c)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(rpn_to_infix("abc-+", 5, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "a+b-c");
 }
 END_TEST
 
@@ -138,6 +152,8 @@ Suite *inf_suite()
     TCase *tc_core;
     tc_core = tcase_create("Core");
     tcase_add_test(tc_core, inf_a_plus_b);
+    tcase_add_test(tc_core, inf_a_plus_b_plus_c);
+    tcase_add_test(tc_core, inf_a_plus_b_minus_c);
 
     suite_add_tcase(s, tc_core);
     return s;

@@ -18,6 +18,16 @@ typedef int bool;
     name = malloc(sizeof(type) * size);  \
     MEMSET(name, size);
 
+#define NEW(type, name)   \
+    malloc(sizeof(type)); \
+    MEMSET(name, sizeof(type));
+
+#define PUSH(name, index, val) \
+    name[(*index)++] = val;
+
+#define POP(buff, index) \
+    buff[--(*index)];
+
 #define true 1
 #define false 0
 #ifndef null
@@ -73,18 +83,6 @@ char peek(char *buff, int *index)
     return buff[*index - 1];
 }
 
-void push(char *buff, int *index, char c)
-{
-    buff[(*index)++] = c;
-}
-
-char pop(char *buff, int *index)
-{
-    if (*index > 0)
-        return buff[--(*index)];
-    return 0;
-}
-
 void swap(char *a, char *b)
 {
     char c = *a;
@@ -96,16 +94,16 @@ void handle_ops(char op, char *buff, int *buffindex, char *scratchbuff, int *scr
 {
     if (*scratchbufflen > 0 && !op_less_than(op, peek(scratchbuff, scratchbufflen)))
     {
-        push(scratchbuff, scratchbufflen, op);
+        PUSH(scratchbuff, scratchbufflen, op);
         while (*scratchbufflen > 1 && scratchbuff[*scratchbufflen - 2] != '(' && op_less_than(scratchbuff[*scratchbufflen - 2], scratchbuff[*scratchbufflen - 1]))
         {
             swap(&scratchbuff[*scratchbufflen - 1], &scratchbuff[*scratchbufflen - 2]);
-            push(buff, buffindex, pop(scratchbuff, scratchbufflen));
+            PUSH(buff, buffindex, POP(scratchbuff, scratchbufflen));
         }
     }
     else
     {
-        push(scratchbuff, scratchbufflen, op);
+        PUSH(scratchbuff, scratchbufflen, op);
     }
 }
 
@@ -114,10 +112,10 @@ void unwind(char *buff, int *buffindex, char *scratchbuff, int *scratchbufflen)
     char op;
     do
     {
-        op = pop(scratchbuff, scratchbufflen);
+        op = POP(scratchbuff, scratchbufflen);
         if (op != '(')
         {
-            push(buff, buffindex, op);
+            PUSH(buff, buffindex, op);
         }
     } while (op != '(' && *scratchbufflen > 0);
 }
@@ -135,7 +133,7 @@ bool infix_to_rpn_impl(const char *infix, int infixmaxlen, int index, char *buff
     char inf = infix[index];
     if (valid_operand(inf))
     {
-        push(buff, buffindex, inf);
+        PUSH(buff, buffindex, inf);
     }
     else if (valid_operator(inf))
     {
@@ -143,7 +141,7 @@ bool infix_to_rpn_impl(const char *infix, int infixmaxlen, int index, char *buff
     }
     else if (valid_open_paren(inf))
     {
-        push(scratchbuff, scratchbufflen, inf);
+        PUSH(scratchbuff, scratchbufflen, inf);
     }
     else if (valid_close_paren(inf))
     {
@@ -180,42 +178,81 @@ char *infix_to_rpn(const char *infix, int infixmaxlen, char *buff, int bufflen, 
     return ret ? buff : null;
 }
 
-bool rpn_to_infix_impl(const char *rpn, int rpnmaxlen, int index, char *buff, int *buffindex, char *scratchbuff, int *scratchbufflen)
+typedef struct node
 {
-    if (rpn[index] == '\0' || index >= rpnmaxlen)
+    struct node *lhs, *rhs;
+    char c;
+} node;
+
+bool walk(node *root, char *buff, int *bufflen)
+{
+    if (root->lhs != null)
     {
-        if (*scratchbufflen > 0)
+        bool paren = false;
+        if (valid_operator(root->c) && valid_operator(root->lhs->c) && op_less_than(root->c, root->lhs->c))
         {
-            push(buff, buffindex, ')');
+            paren = true;
+            PUSH(buff, bufflen, '(');
         }
-        return true;
-    }
-    char r = rpn[index];
-    if (valid_operand(r))
-    {
-        if (index < rpnmaxlen && rpn[index + 1] != '\0' && valid_operand(rpn[index + 1]))
+        walk(root->lhs, buff, bufflen);
+        if (paren)
         {
-            push(buff, buffindex, '(');
+            PUSH(buff, bufflen, ')');
         }
-        push(buff, buffindex, r);
     }
-    else if (valid_operator(r))
+    PUSH(buff, bufflen, root->c);
+    if (root->rhs != null)
     {
-        push(buff, buffindex, r);
-        swap(&buff[*buffindex - 1], &buff[*buffindex - 2]);
-        push(buff, buffindex, ')');
+        bool paren = false;
+        if (valid_operator(root->c) && valid_operator(root->rhs->c) && op_less_than(root->c, root->rhs->c))
+        {
+            paren = true;
+            PUSH(buff, bufflen, '(');
+        }
+        walk(root->rhs, buff, bufflen);
+        if (paren)
+        {
+            PUSH(buff, bufflen, ')');
+        }
     }
-    bool ret = rpn_to_infix_impl(rpn, rpnmaxlen, index + 1, buff, buffindex, scratchbuff, scratchbufflen);
-    if (!ret)
-        return ret;
+    free(root);
     return true;
 }
 
-char *rpn_to_infix(const char *rpn, int rpnmaxlen, char *buff, int bufflen, char *scratchbuff, int scratchbufflen)
+node **rpn_to_infix_impl(const char *rpn, int rpnmaxlen, void *scratchbuff, int scratchbufflen)
+{
+    node **stack = scratchbuff;
+    int buffindex = 0;
+    for (int i = 0; i < rpnmaxlen && rpn[i] != '\0'; i++)
+    {
+        char c = rpn[i];
+        node *n = NEW(node, n);
+        n->c = c;
+        if (valid_operand(c))
+        {
+            PUSH(stack, &buffindex, n);
+        }
+        else if (valid_operator(c))
+        {
+            node *rhs = POP(stack, &buffindex);
+            node *lhs = POP(stack, &buffindex);
+            n->rhs = rhs;
+            n->lhs = lhs;
+            PUSH(stack, &buffindex, n);
+        }
+    }
+    return stack;
+}
+
+char *rpn_to_infix(const char *rpn, int rpnmaxlen, char *buff, int bufflen, void *scratchbuff, int scratchbufflen)
 {
     int sbl = 0;
     int bl = 0;
-    bool ret = rpn_to_infix_impl(rpn, rpnmaxlen, 0, buff, &bl, scratchbuff, &sbl);
-
+    node **stack = rpn_to_infix_impl(rpn, rpnmaxlen, scratchbuff, scratchbufflen);
+    if (stack != null)
+    {
+        int buffindex = 0;
+        walk(stack[0], buff, &buffindex);
+    }
     return buff;
 }
