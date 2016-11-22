@@ -103,7 +103,7 @@ END_TEST
 START_TEST(inf_a_plus_b_small_scratch)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_ptr_eq(rpn_to_infix("ab+", 3, buff, sizeof(buff), scratchbuff, 0, 0), 0);
+    ck_assert_ptr_eq(rpn_to_infix("abc++", 3, buff, sizeof(buff), scratchbuff, 1, 0), 0);
 }
 END_TEST
 

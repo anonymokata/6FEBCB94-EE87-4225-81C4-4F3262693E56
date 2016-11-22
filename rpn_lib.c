@@ -263,7 +263,21 @@ node **rpn_to_infix_impl(const char *rpn, int rpnmaxlen, void *scratchbuff, int 
 
 char *rpn_to_infix(const char *rpn, int rpnmaxlen, char *buff, int bufflen, void *scratchbuff, int scratchbufflen, int forceParens)
 {
+    bool dynamic = scratchbuff == null || scratchbufflen == 0;
+    if (dynamic)
+    {
+        scratchbufflen = rpnmaxlen;
+        DRAII_EXISTING(char, scratchbuff, scratchbufflen);
+    }
+    else
+    {
+        MEMSET(scratchbuff, scratchbufflen);
+    }
     node **stack = rpn_to_infix_impl(rpn, rpnmaxlen, scratchbuff, scratchbufflen);
+    if (dynamic)
+    {
+        free(scratchbuff);
+    }
     if (stack != null)
     {
         int buffindex = 0;
