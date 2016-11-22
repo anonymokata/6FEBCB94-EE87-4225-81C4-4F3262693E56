@@ -28,6 +28,10 @@ typedef int bool;
 #define POP(buff, index) \
     buff[--(*index)];
 
+#define RET_BUFF_OVERFLOW(buffindex, bufflen) \
+    if (*buffindex > bufflen)                 \
+        return false;
+
 #define true 1
 #define false 0
 #ifndef null
@@ -61,7 +65,7 @@ bool valid_close_paren(char c)
 
 byte find_op_value(char op)
 {
-    for (int i = 0; i < sizeof(operator_lookup); i++)
+    for (unsigned long i = 0; i < sizeof(operator_lookup); i++)
     {
         if (operator_lookup[i] == op)
             return i;
@@ -184,7 +188,7 @@ typedef struct node
     char c;
 } node;
 
-bool walk(node *root, char *buff, int *bufflen, bool forceParens)
+bool walk(node *root, char *buff, int *buffindex, int bufflen, bool forceParens)
 {
     if (root->lhs != null)
     {
@@ -192,27 +196,36 @@ bool walk(node *root, char *buff, int *bufflen, bool forceParens)
         if (valid_operator(root->c) && valid_operator(root->lhs->c) && (op_less_than(root->c, root->lhs->c) || forceParens))
         {
             paren = true;
-            PUSH(buff, bufflen, '(');
+            RET_BUFF_OVERFLOW(buffindex, bufflen);
+            PUSH(buff, buffindex, '(');
         }
-        walk(root->lhs, buff, bufflen, forceParens);
+        bool ret = walk(root->lhs, buff, buffindex, bufflen, forceParens);
+        if (!ret)
+            return ret;
         if (paren)
         {
-            PUSH(buff, bufflen, ')');
+            RET_BUFF_OVERFLOW(buffindex, bufflen);
+            PUSH(buff, buffindex, ')');
         }
     }
-    PUSH(buff, bufflen, root->c);
+    RET_BUFF_OVERFLOW(buffindex, bufflen);
+    PUSH(buff, buffindex, root->c);
     if (root->rhs != null)
     {
         bool paren = false;
         if (valid_operator(root->c) && valid_operator(root->rhs->c) && (op_less_than(root->c, root->rhs->c) || forceParens))
         {
             paren = true;
-            PUSH(buff, bufflen, '(');
+            RET_BUFF_OVERFLOW(buffindex, bufflen);
+            PUSH(buff, buffindex, '(');
         }
-        walk(root->rhs, buff, bufflen, forceParens);
+        bool ret = walk(root->rhs, buff, buffindex, bufflen, forceParens);
+        if (!ret)
+            return ret;
         if (paren)
         {
-            PUSH(buff, bufflen, ')');
+            RET_BUFF_OVERFLOW(buffindex, bufflen);
+            PUSH(buff, buffindex, ')');
         }
     }
     free(root);
@@ -230,6 +243,8 @@ node **rpn_to_infix_impl(const char *rpn, int rpnmaxlen, void *scratchbuff, int 
         n->c = c;
         if (valid_operand(c))
         {
+            if (buffindex > scratchbufflen)
+                return null;
             PUSH(stack, &buffindex, n);
         }
         else if (valid_operator(c))
@@ -238,6 +253,8 @@ node **rpn_to_infix_impl(const char *rpn, int rpnmaxlen, void *scratchbuff, int 
             node *lhs = POP(stack, &buffindex);
             n->rhs = rhs;
             n->lhs = lhs;
+            if (buffindex > scratchbufflen)
+                return null;
             PUSH(stack, &buffindex, n);
         }
     }
@@ -246,13 +263,11 @@ node **rpn_to_infix_impl(const char *rpn, int rpnmaxlen, void *scratchbuff, int 
 
 char *rpn_to_infix(const char *rpn, int rpnmaxlen, char *buff, int bufflen, void *scratchbuff, int scratchbufflen, int forceParens)
 {
-    int sbl = 0;
-    int bl = 0;
     node **stack = rpn_to_infix_impl(rpn, rpnmaxlen, scratchbuff, scratchbufflen);
     if (stack != null)
     {
         int buffindex = 0;
-        bool success = walk(stack[0], buff, &buffindex, forceParens);
+        bool success = walk(stack[0], buff, &buffindex, bufflen, forceParens);
         if (success)
         {
             return buff;

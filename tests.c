@@ -1,6 +1,5 @@
 #include <stddef.h>
 #include <string.h>
-#include <check_stdint.h>
 #include <sys/types.h>
 #include <check.h>
 #include "rpn.h"
@@ -98,6 +97,20 @@ START_TEST(the_big_one)
 {
     memset(buff, 0, sizeof(buff));
     ck_assert_str_eq(infix_to_rpn("(a+g)*(((b-a)+c)^(c+(e*(d^f))))", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "ag+ba-c+cedf^*+^*");
+}
+END_TEST
+
+START_TEST(inf_a_plus_b_small_scratch)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_ptr_eq(rpn_to_infix("ab+", 3, buff, sizeof(buff), scratchbuff, 0, 0), 0);
+}
+END_TEST
+
+START_TEST(inf_a_plus_b_small_buff)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_ptr_eq(rpn_to_infix("ab+", 3, buff, 1, scratchbuff, sizeof(scratchbuff), 0), 0);
 }
 END_TEST
 
@@ -215,6 +228,8 @@ Suite *inf_suite()
     TCase *tc_core;
     tc_core = tcase_create("Core");
     tcase_add_test(tc_core, inf_a_plus_b);
+    tcase_add_test(tc_core, inf_a_plus_b_small_scratch);
+    tcase_add_test(tc_core, inf_a_plus_b_small_buff);
     tcase_add_test(tc_core, inf_a_plus_b_plus_c);
     tcase_add_test(tc_core, inf_a_plus_b_minus_c);
     tcase_add_test(tc_core, inf_l_div_m_pow_n_mult_o_minus_p);
