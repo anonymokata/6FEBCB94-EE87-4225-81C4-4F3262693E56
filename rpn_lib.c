@@ -184,17 +184,17 @@ typedef struct node
     char c;
 } node;
 
-bool walk(node *root, char *buff, int *bufflen)
+bool walk(node *root, char *buff, int *bufflen, bool forceParens)
 {
     if (root->lhs != null)
     {
         bool paren = false;
-        if (valid_operator(root->c) && valid_operator(root->lhs->c) && op_less_than(root->c, root->lhs->c))
+        if (valid_operator(root->c) && valid_operator(root->lhs->c) && (op_less_than(root->c, root->lhs->c) || forceParens))
         {
             paren = true;
             PUSH(buff, bufflen, '(');
         }
-        walk(root->lhs, buff, bufflen);
+        walk(root->lhs, buff, bufflen, forceParens);
         if (paren)
         {
             PUSH(buff, bufflen, ')');
@@ -204,12 +204,12 @@ bool walk(node *root, char *buff, int *bufflen)
     if (root->rhs != null)
     {
         bool paren = false;
-        if (valid_operator(root->c) && valid_operator(root->rhs->c) && op_less_than(root->c, root->rhs->c))
+        if (valid_operator(root->c) && valid_operator(root->rhs->c) && (op_less_than(root->c, root->rhs->c) || forceParens))
         {
             paren = true;
             PUSH(buff, bufflen, '(');
         }
-        walk(root->rhs, buff, bufflen);
+        walk(root->rhs, buff, bufflen, forceParens);
         if (paren)
         {
             PUSH(buff, bufflen, ')');
@@ -244,7 +244,7 @@ node **rpn_to_infix_impl(const char *rpn, int rpnmaxlen, void *scratchbuff, int 
     return stack;
 }
 
-char *rpn_to_infix(const char *rpn, int rpnmaxlen, char *buff, int bufflen, void *scratchbuff, int scratchbufflen)
+char *rpn_to_infix(const char *rpn, int rpnmaxlen, char *buff, int bufflen, void *scratchbuff, int scratchbufflen, int forceParens)
 {
     int sbl = 0;
     int bl = 0;
@@ -252,7 +252,11 @@ char *rpn_to_infix(const char *rpn, int rpnmaxlen, char *buff, int bufflen, void
     if (stack != null)
     {
         int buffindex = 0;
-        walk(stack[0], buff, &buffindex);
+        bool success = walk(stack[0], buff, &buffindex, forceParens);
+        if (success)
+        {
+            return buff;
+        }
     }
-    return buff;
+    return null;
 }

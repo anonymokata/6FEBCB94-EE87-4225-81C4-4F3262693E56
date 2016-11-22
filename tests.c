@@ -104,49 +104,84 @@ END_TEST
 START_TEST(inf_a_plus_b)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("ab+", 3, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "a+b");
+    ck_assert_str_eq(rpn_to_infix("ab+", 3, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 0), "a+b");
 }
 END_TEST
 
 START_TEST(inf_a_plus_b_plus_c)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("abc++", 5, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "a+b+c");
+    ck_assert_str_eq(rpn_to_infix("abc++", 5, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 0), "a+b+c");
 }
 END_TEST
 
 START_TEST(inf_a_plus_b_minus_c)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("abc-+", 5, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "a+b-c");
+    ck_assert_str_eq(rpn_to_infix("abc-+", 5, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 0), "a+b-c");
 }
 END_TEST
 
 START_TEST(inf_l_div_m_pow_n_mult_o_minus_p)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("lmn^/o*p-", 9, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "l/m^n*o-p");
-}
-END_TEST
-
-START_TEST(inf_l_div_m_pow_n_mult_o_minus_p_with_parens)
-{
-    memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("lmn^/o*p-", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "l/m^n*o-p");
+    ck_assert_str_eq(rpn_to_infix("lmn^/o*p-", 9, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 0), "l/m^n*o-p");
 }
 END_TEST
 
 START_TEST(inf_p_p_v_div_w_p_pow_x_p_mul_p_y_sub_z_p)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("vw/x^yz-*", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "(v/w)^x*(y-z)");
+    ck_assert_str_eq(rpn_to_infix("vw/x^yz-*", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 0), "(v/w)^x*(y-z)");
 }
 END_TEST
 
 START_TEST(inf_the_big_one)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("ag+ba-c+cedf^*+^*", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "(a+g)*(b-a+c)^(c+e*d^f)");
+    ck_assert_str_eq(rpn_to_infix("ag+ba-c+cedf^*+^*", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 0), "(a+g)*(b-a+c)^(c+e*d^f)");
+}
+END_TEST
+
+START_TEST(inf_fp_a_plus_b)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(rpn_to_infix("ab+", 3, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 1), "a+b");
+}
+END_TEST
+
+START_TEST(inf_fp_a_plus_b_plus_c)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(rpn_to_infix("abc++", 5, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 1), "a+(b+c)");
+}
+END_TEST
+
+START_TEST(inf_fp_a_plus_b_minus_c)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(rpn_to_infix("abc-+", 5, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 1), "a+(b-c)");
+}
+END_TEST
+
+START_TEST(inf_fp_l_div_m_pow_n_mult_o_minus_p)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(rpn_to_infix("lmn^/o*p-", 9, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 1), "((l/(m^n))*o)-p");
+}
+END_TEST
+
+START_TEST(inf_fp_p_p_v_div_w_p_pow_x_p_mul_p_y_sub_z_p)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(rpn_to_infix("vw/x^yz-*", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 1), "((v/w)^x)*(y-z)");
+}
+END_TEST
+
+START_TEST(inf_fp_the_big_one)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(rpn_to_infix("ag+ba-c+cedf^*+^*", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 1), "(a+g)*(((b-a)+c)^(c+(e*(d^f))))");
 }
 END_TEST
 
@@ -183,7 +218,6 @@ Suite *inf_suite()
     tcase_add_test(tc_core, inf_a_plus_b_plus_c);
     tcase_add_test(tc_core, inf_a_plus_b_minus_c);
     tcase_add_test(tc_core, inf_l_div_m_pow_n_mult_o_minus_p);
-    tcase_add_test(tc_core, inf_l_div_m_pow_n_mult_o_minus_p_with_parens);
     tcase_add_test(tc_core, inf_p_p_v_div_w_p_pow_x_p_mul_p_y_sub_z_p);
     tcase_add_test(tc_core, inf_the_big_one);
 
@@ -191,19 +225,48 @@ Suite *inf_suite()
     return s;
 }
 
+Suite *inf_parens_suite()
+{
+    Suite *s = suite_create("inf forceParens");
+    TCase *tc_core;
+    tc_core = tcase_create("Core");
+    tcase_add_test(tc_core, inf_fp_a_plus_b);
+    tcase_add_test(tc_core, inf_fp_a_plus_b_plus_c);
+    tcase_add_test(tc_core, inf_fp_a_plus_b_minus_c);
+    tcase_add_test(tc_core, inf_fp_l_div_m_pow_n_mult_o_minus_p);
+    tcase_add_test(tc_core, inf_fp_p_p_v_div_w_p_pow_x_p_mul_p_y_sub_z_p);
+    tcase_add_test(tc_core, inf_fp_the_big_one);
+
+    suite_add_tcase(s, tc_core);
+    return s;
+}
+
 int main()
 {
-    Suite *s = rpn_suite();//FIXME: free
-    SRunner *sr = srunner_create(s);
-    srunner_run_all(sr, CK_NORMAL);
-    int number_failed = srunner_ntests_failed(sr);
-    srunner_free(sr);
-    
-    Suite *inf_s = inf_suite();//FIXME: free
-    SRunner *inf_sr = srunner_create(inf_s);
-    srunner_run_all(inf_sr, CK_NORMAL);
-    int inf_number_failed = srunner_ntests_failed(inf_sr);
-    srunner_free(inf_sr);
-    
-    return number_failed + inf_number_failed;
+    int number_failed = 0, inf_number_failed = 0, inf_fp_number_failed = 0;
+    {
+        Suite *s = rpn_suite(); //FIXME: free
+        SRunner *sr = srunner_create(s);
+        srunner_run_all(sr, CK_NORMAL);
+        number_failed = srunner_ntests_failed(sr);
+        srunner_free(sr);
+    }
+
+    {
+        Suite *inf_s = inf_suite(); //FIXME: free
+        SRunner *inf_sr = srunner_create(inf_s);
+        srunner_run_all(inf_sr, CK_NORMAL);
+        inf_number_failed = srunner_ntests_failed(inf_sr);
+        srunner_free(inf_sr);
+    }
+
+    {
+        Suite *inf_s_parens = inf_parens_suite(); //FIXME: free
+        SRunner *inf_sr_parens = srunner_create(inf_s_parens);
+        srunner_run_all(inf_sr_parens, CK_NORMAL);
+        inf_fp_number_failed = srunner_ntests_failed(inf_sr_parens);
+        srunner_free(inf_sr_parens);
+    }
+
+    return number_failed + inf_number_failed + inf_fp_number_failed;
 }
