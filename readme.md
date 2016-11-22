@@ -26,7 +26,7 @@ infixmaxlen: maximum length of infix string. NOTE: null characters in infix are 
 buff: output buffer
 bufflen: output buffer length
 scratchbuff: buffer used for temporary storage, leave blank for dynamic memory allocation
-scratchbufflen: length of scratchbuff
+scratchbufflen: length of scratchbuff, 0 for dynamic memory allocation
 returns: buff if success, null if not
 
 char *rpn_to_infix(const char *rpn, int rpnmaxlen, char *buff, int bufflen, void *scratchbuff, int scratchbufflen, int forceParens);
@@ -35,7 +35,7 @@ rpnmaxlen: maximum length of infix string. NOTE: null characters in infix are al
 buff: output buffer
 bufflen: output buffer length
 scratchbuff: buffer used for temporary storage, leave blank for dynamic memory allocation
-scratchbufflen: length of scratchbuff
+scratchbufflen: length of scratchbuff, 0 for dynamic memory allocation
 forceParens: 1 to force output to have parentheses around each grouping, 0 for only required
 returns: buff if success, null if not
 ```
