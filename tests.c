@@ -122,6 +122,34 @@ START_TEST(inf_a_plus_b_minus_c)
 }
 END_TEST
 
+START_TEST(inf_l_div_m_pow_n_mult_o_minus_p)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(rpn_to_infix("lmn^/o*p-", 9, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "l/m^n*o-p");
+}
+END_TEST
+
+START_TEST(inf_l_div_m_pow_n_mult_o_minus_p_with_parens)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(rpn_to_infix("lmn^/o*p-", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "l/m^n*o-p");
+}
+END_TEST
+
+START_TEST(inf_p_p_v_div_w_p_pow_x_p_mul_p_y_sub_z_p)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(rpn_to_infix("vw/x^yz-*", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "(v/w)^x*(y-z)");
+}
+END_TEST
+
+START_TEST(inf_the_big_one)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_str_eq(rpn_to_infix("ag+ba-c+cedf^*+^*", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "(a+g)*(b-a+c)^(c+e*d^f)");
+}
+END_TEST
+
 Suite *rpn_suite()
 {
     Suite *s = suite_create("rpn");
@@ -154,6 +182,10 @@ Suite *inf_suite()
     tcase_add_test(tc_core, inf_a_plus_b);
     tcase_add_test(tc_core, inf_a_plus_b_plus_c);
     tcase_add_test(tc_core, inf_a_plus_b_minus_c);
+    tcase_add_test(tc_core, inf_l_div_m_pow_n_mult_o_minus_p);
+    tcase_add_test(tc_core, inf_l_div_m_pow_n_mult_o_minus_p_with_parens);
+    tcase_add_test(tc_core, inf_p_p_v_div_w_p_pow_x_p_mul_p_y_sub_z_p);
+    tcase_add_test(tc_core, inf_the_big_one);
 
     suite_add_tcase(s, tc_core);
     return s;
