@@ -1,17 +1,19 @@
 HDRS = $(*.h)
 
-all: Makefile rpn rpn_tests
+all: meta rpn rpn_tests meta
 
-test: rpn_tests
+meta: Makefile $(HDRS)
+
+test: meta rpn_tests
 	./rpn_tests
 
-run: rpn
+run: rpn meta
 	./rpn
 
-rpn: rpn_lib.c rpn.c $(HDRS)
+rpn: meta rpn_lib.c rpn.c
 	gcc rpn_lib.c rpn.c -g -o rpn
 
-rpn_tests: rpn_lib.c tests.c $(HDRS)
+rpn_tests: meta rpn_lib.c tests.c
 	gcc rpn_lib.c tests.c `pkg-config --cflags --libs check` -g -o rpn_tests
 	
 clean:
