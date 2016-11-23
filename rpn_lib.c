@@ -94,43 +94,43 @@ void swap(char *a, char *b)
     *b = c;
 }
 
-void handle_ops(char op, char *buff, int *buffindex, char *scratchbuff, int *scratchbufflen)
+void handle_ops(char op, char *buff, int *buffindex, char *tempbuff, int *tempbufflen)
 {
-    if (*scratchbufflen > 0 && !op_less_than(op, peek(scratchbuff, scratchbufflen)))
+    if (*tempbufflen > 0 && !op_less_than(op, peek(tempbuff, tempbufflen)))
     {
-        PUSH(scratchbuff, scratchbufflen, op);
-        while (*scratchbufflen > 1 && scratchbuff[*scratchbufflen - 2] != '(' && op_less_than(scratchbuff[*scratchbufflen - 2], scratchbuff[*scratchbufflen - 1]))
+        PUSH(tempbuff, tempbufflen, op);
+        while (*tempbufflen > 1 && tempbuff[*tempbufflen - 2] != '(' && op_less_than(tempbuff[*tempbufflen - 2], tempbuff[*tempbufflen - 1]))
         {
-            swap(&scratchbuff[*scratchbufflen - 1], &scratchbuff[*scratchbufflen - 2]);
-            PUSH(buff, buffindex, POP(scratchbuff, scratchbufflen));
+            swap(&tempbuff[*tempbufflen - 1], &tempbuff[*tempbufflen - 2]);
+            PUSH(buff, buffindex, POP(tempbuff, tempbufflen));
         }
     }
     else
     {
-        PUSH(scratchbuff, scratchbufflen, op);
+        PUSH(tempbuff, tempbufflen, op);
     }
 }
 
-void unwind(char *buff, int *buffindex, char *scratchbuff, int *scratchbufflen)
+void unwind(char *buff, int *buffindex, char *tempbuff, int *tempbufflen)
 {
     char op;
     do
     {
-        op = POP(scratchbuff, scratchbufflen);
+        op = POP(tempbuff, tempbufflen);
         if (op != '(')
         {
             PUSH(buff, buffindex, op);
         }
-    } while (op != '(' && *scratchbufflen > 0);
+    } while (op != '(' && *tempbufflen > 0);
 }
 
-bool infix_to_rpn_impl(const char *infix, int infixmaxlen, int index, char *buff, int *buffindex, char *scratchbuff, int *scratchbufflen)
+bool infix_to_rpn_impl(const char *infix, int infixmaxlen, int index, char *buff, int *buffindex, char *tempbuff, int *tempbufflen)
 {
     if (infix[index] == '\0' || index >= infixmaxlen)
     {
-        if (*scratchbufflen > 0)
+        if (*tempbufflen > 0)
         {
-            unwind(buff, buffindex, scratchbuff, scratchbufflen);
+            unwind(buff, buffindex, tempbuff, tempbufflen);
         }
         return true;
     }
@@ -141,43 +141,43 @@ bool infix_to_rpn_impl(const char *infix, int infixmaxlen, int index, char *buff
     }
     else if (valid_operator(inf))
     {
-        handle_ops(inf, buff, buffindex, scratchbuff, scratchbufflen);
+        handle_ops(inf, buff, buffindex, tempbuff, tempbufflen);
     }
     else if (valid_open_paren(inf))
     {
-        PUSH(scratchbuff, scratchbufflen, inf);
+        PUSH(tempbuff, tempbufflen, inf);
     }
     else if (valid_close_paren(inf))
     {
-        unwind(buff, buffindex, scratchbuff, scratchbufflen);
+        unwind(buff, buffindex, tempbuff, tempbufflen);
     }
-    bool ret = infix_to_rpn_impl(infix, infixmaxlen, index + 1, buff, buffindex, scratchbuff, scratchbufflen);
+    bool ret = infix_to_rpn_impl(infix, infixmaxlen, index + 1, buff, buffindex, tempbuff, tempbufflen);
     if (!ret)
         return ret;
     return true;
 }
 
-char *infix_to_rpn(const char *infix, int infixmaxlen, char *buff, int bufflen, char *scratchbuff, int scratchbufflen)
+char *infix_to_rpn(const char *infix, int infixmaxlen, char *buff, int bufflen, char *tempbuff, int tempbufflen)
 {
     if (infix == null || buff == null)
         return null;
     MEMSET(buff, bufflen);
-    bool dynamic = scratchbuff == null || scratchbufflen == 0;
+    bool dynamic = tempbuff == null || tempbufflen == 0;
     if (dynamic)
     {
-        scratchbufflen = infixmaxlen;
-        DRAII_EXISTING(char, scratchbuff, scratchbufflen);
+        tempbufflen = infixmaxlen;
+        DRAII_EXISTING(char, tempbuff, tempbufflen);
     }
     else
     {
-        MEMSET(scratchbuff, scratchbufflen);
+        MEMSET(tempbuff, tempbufflen);
     }
     int sbl = 0;
     int bl = 0;
-    bool ret = infix_to_rpn_impl(infix, infixmaxlen, 0, buff, &bl, scratchbuff, &sbl);
+    bool ret = infix_to_rpn_impl(infix, infixmaxlen, 0, buff, &bl, tempbuff, &sbl);
     if (dynamic)
     {
-        free(scratchbuff);
+        free(tempbuff);
     }
     return ret ? buff : null;
 }
@@ -232,9 +232,9 @@ bool walk(node *root, char *buff, int *buffindex, int bufflen, bool forceParens)
     return true;
 }
 
-node **rpn_to_infix_impl(const char *rpn, int rpnmaxlen, void *scratchbuff, int scratchbufflen)
+node **rpn_to_infix_impl(const char *rpn, int rpnmaxlen, void *tempbuff, int tempbufflen)
 {
-    node **stack = scratchbuff;
+    node **stack = tempbuff;
     int buffindex = 0;
     for (int i = 0; i < rpnmaxlen && rpn[i] != '\0'; i++)
     {
@@ -243,7 +243,7 @@ node **rpn_to_infix_impl(const char *rpn, int rpnmaxlen, void *scratchbuff, int 
         n->c = c;
         if (valid_operand(c))
         {
-            if (buffindex > scratchbufflen)
+            if (buffindex > tempbufflen)
                 return null;
             PUSH(stack, &buffindex, n);
         }
@@ -253,7 +253,7 @@ node **rpn_to_infix_impl(const char *rpn, int rpnmaxlen, void *scratchbuff, int 
             node *lhs = POP(stack, &buffindex);
             n->rhs = rhs;
             n->lhs = lhs;
-            if (buffindex > scratchbufflen)
+            if (buffindex > tempbufflen)
                 return null;
             PUSH(stack, &buffindex, n);
         }
@@ -261,22 +261,22 @@ node **rpn_to_infix_impl(const char *rpn, int rpnmaxlen, void *scratchbuff, int 
     return stack;
 }
 
-char *rpn_to_infix(const char *rpn, int rpnmaxlen, char *buff, int bufflen, void *scratchbuff, int scratchbufflen, int forceParens)
+char *rpn_to_infix(const char *rpn, int rpnmaxlen, char *buff, int bufflen, void *tempbuff, int tempbufflen, int forceParens)
 {
-    bool dynamic = scratchbuff == null || scratchbufflen == 0;
+    bool dynamic = tempbuff == null || tempbufflen == 0;
     if (dynamic)
     {
-        scratchbufflen = rpnmaxlen;
-        DRAII_EXISTING(char, scratchbuff, scratchbufflen);
+        tempbufflen = rpnmaxlen;
+        DRAII_EXISTING(char, tempbuff, tempbufflen);
     }
     else
     {
-        MEMSET(scratchbuff, scratchbufflen);
+        MEMSET(tempbuff, tempbufflen);
     }
-    node **stack = rpn_to_infix_impl(rpn, rpnmaxlen, scratchbuff, scratchbufflen);
+    node **stack = rpn_to_infix_impl(rpn, rpnmaxlen, tempbuff, tempbufflen);
     if (dynamic)
     {
-        free(scratchbuff);
+        free(tempbuff);
     }
     if (stack != null)
     {

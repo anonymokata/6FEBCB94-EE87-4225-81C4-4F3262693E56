@@ -21,180 +21,180 @@ START_TEST(buff_len_check)
     ck_assert_ptr_eq(infix_to_rpn("a+b", 0, NULL, 0, NULL, 0), NULL);
 }
 END_TEST
-char buff[128], scratchbuff[128];
+char buff[128], tempbuff[128];
 
 START_TEST(a_plus_b)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(infix_to_rpn("a+b", 3, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "ab+");
+    ck_assert_str_eq(infix_to_rpn("a+b", 3, buff, sizeof(buff), tempbuff, sizeof(tempbuff)), "ab+");
 }
 END_TEST
 
 START_TEST(a_plus_b_minus_c)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(infix_to_rpn("a+b-c", 5, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "abc-+");
+    ck_assert_str_eq(infix_to_rpn("a+b-c", 5, buff, sizeof(buff), tempbuff, sizeof(tempbuff)), "abc-+");
 }
 END_TEST
 
 START_TEST(a_plus_p_b_minus_c_p)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(infix_to_rpn("a+(b-c)", 7, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "abc-+");
+    ck_assert_str_eq(infix_to_rpn("a+(b-c)", 7, buff, sizeof(buff), tempbuff, sizeof(tempbuff)), "abc-+");
 }
 END_TEST
 
 START_TEST(a_plus_b_minus_c_minus_d)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(infix_to_rpn("a+b-c-d", 7, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "abcd--+");
+    ck_assert_str_eq(infix_to_rpn("a+b-c-d", 7, buff, sizeof(buff), tempbuff, sizeof(tempbuff)), "abcd--+");
 }
 END_TEST
 
 START_TEST(p_a_plus_b_p_minus_c)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(infix_to_rpn("(a+b)-c", 7, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "ab+c-");
+    ck_assert_str_eq(infix_to_rpn("(a+b)-c", 7, buff, sizeof(buff), tempbuff, sizeof(tempbuff)), "ab+c-");
 }
 END_TEST
 
 START_TEST(abcdef)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(infix_to_rpn("a+b-c*d/e^f", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "abcdef^/*-+");
+    ck_assert_str_eq(infix_to_rpn("a+b-c*d/e^f", sizeof(buff), buff, sizeof(buff), tempbuff, sizeof(tempbuff)), "abcdef^/*-+");
 }
 END_TEST
 
 START_TEST(abcdef_short)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(infix_to_rpn("a+b-c*d/e^f", 3, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "ab+");
+    ck_assert_str_eq(infix_to_rpn("a+b-c*d/e^f", 3, buff, sizeof(buff), tempbuff, sizeof(tempbuff)), "ab+");
 }
 END_TEST
 
 START_TEST(l_div_m_pow_n_mult_o_minus_p)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(infix_to_rpn("l/m^n*o-p", 9, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "lmn^/o*p-");
+    ck_assert_str_eq(infix_to_rpn("l/m^n*o-p", 9, buff, sizeof(buff), tempbuff, sizeof(tempbuff)), "lmn^/o*p-");
 }
 END_TEST
 
 START_TEST(l_div_m_pow_n_mult_o_minus_p_with_parens)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(infix_to_rpn("((l/(m^n))*o)-p", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "lmn^/o*p-");
+    ck_assert_str_eq(infix_to_rpn("((l/(m^n))*o)-p", sizeof(buff), buff, sizeof(buff), tempbuff, sizeof(tempbuff)), "lmn^/o*p-");
 }
 END_TEST
 
 START_TEST(p_p_v_div_w_p_pow_x_p_mul_p_y_sub_z_p)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(infix_to_rpn("((v/w)^x)*(y-z)", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "vw/x^yz-*");
+    ck_assert_str_eq(infix_to_rpn("((v/w)^x)*(y-z)", sizeof(buff), buff, sizeof(buff), tempbuff, sizeof(tempbuff)), "vw/x^yz-*");
 }
 END_TEST
 
 START_TEST(the_big_one)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(infix_to_rpn("(a+g)*(((b-a)+c)^(c+(e*(d^f))))", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff)), "ag+ba-c+cedf^*+^*");
+    ck_assert_str_eq(infix_to_rpn("(a+g)*(((b-a)+c)^(c+(e*(d^f))))", sizeof(buff), buff, sizeof(buff), tempbuff, sizeof(tempbuff)), "ag+ba-c+cedf^*+^*");
 }
 END_TEST
 
-START_TEST(inf_a_plus_b_small_scratch)
+START_TEST(inf_a_plus_b_small_temp)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_ptr_eq(rpn_to_infix("abc++", 3, buff, sizeof(buff), scratchbuff, 1, 0), 0);
+    ck_assert_ptr_eq(rpn_to_infix("abc++", 3, buff, sizeof(buff), tempbuff, 1, 0), 0);
 }
 END_TEST
 
 START_TEST(inf_a_plus_b_small_buff)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_ptr_eq(rpn_to_infix("ab+", 3, buff, 1, scratchbuff, sizeof(scratchbuff), 0), 0);
+    ck_assert_ptr_eq(rpn_to_infix("ab+", 3, buff, 1, tempbuff, sizeof(tempbuff), 0), 0);
 }
 END_TEST
 
 START_TEST(inf_a_plus_b)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("ab+", 3, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 0), "a+b");
+    ck_assert_str_eq(rpn_to_infix("ab+", 3, buff, sizeof(buff), tempbuff, sizeof(tempbuff), 0), "a+b");
 }
 END_TEST
 
 START_TEST(inf_a_plus_b_plus_c)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("abc++", 5, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 0), "a+b+c");
+    ck_assert_str_eq(rpn_to_infix("abc++", 5, buff, sizeof(buff), tempbuff, sizeof(tempbuff), 0), "a+b+c");
 }
 END_TEST
 
 START_TEST(inf_a_plus_b_minus_c)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("abc-+", 5, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 0), "a+b-c");
+    ck_assert_str_eq(rpn_to_infix("abc-+", 5, buff, sizeof(buff), tempbuff, sizeof(tempbuff), 0), "a+b-c");
 }
 END_TEST
 
 START_TEST(inf_l_div_m_pow_n_mult_o_minus_p)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("lmn^/o*p-", 9, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 0), "l/m^n*o-p");
+    ck_assert_str_eq(rpn_to_infix("lmn^/o*p-", 9, buff, sizeof(buff), tempbuff, sizeof(tempbuff), 0), "l/m^n*o-p");
 }
 END_TEST
 
 START_TEST(inf_p_p_v_div_w_p_pow_x_p_mul_p_y_sub_z_p)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("vw/x^yz-*", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 0), "(v/w)^x*(y-z)");
+    ck_assert_str_eq(rpn_to_infix("vw/x^yz-*", sizeof(buff), buff, sizeof(buff), tempbuff, sizeof(tempbuff), 0), "(v/w)^x*(y-z)");
 }
 END_TEST
 
 START_TEST(inf_the_big_one)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("ag+ba-c+cedf^*+^*", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 0), "(a+g)*(b-a+c)^(c+e*d^f)");
+    ck_assert_str_eq(rpn_to_infix("ag+ba-c+cedf^*+^*", sizeof(buff), buff, sizeof(buff), tempbuff, sizeof(tempbuff), 0), "(a+g)*(b-a+c)^(c+e*d^f)");
 }
 END_TEST
 
 START_TEST(inf_fp_a_plus_b)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("ab+", 3, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 1), "a+b");
+    ck_assert_str_eq(rpn_to_infix("ab+", 3, buff, sizeof(buff), tempbuff, sizeof(tempbuff), 1), "a+b");
 }
 END_TEST
 
 START_TEST(inf_fp_a_plus_b_plus_c)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("abc++", 5, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 1), "a+(b+c)");
+    ck_assert_str_eq(rpn_to_infix("abc++", 5, buff, sizeof(buff), tempbuff, sizeof(tempbuff), 1), "a+(b+c)");
 }
 END_TEST
 
 START_TEST(inf_fp_a_plus_b_minus_c)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("abc-+", 5, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 1), "a+(b-c)");
+    ck_assert_str_eq(rpn_to_infix("abc-+", 5, buff, sizeof(buff), tempbuff, sizeof(tempbuff), 1), "a+(b-c)");
 }
 END_TEST
 
 START_TEST(inf_fp_l_div_m_pow_n_mult_o_minus_p)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("lmn^/o*p-", 9, buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 1), "((l/(m^n))*o)-p");
+    ck_assert_str_eq(rpn_to_infix("lmn^/o*p-", 9, buff, sizeof(buff), tempbuff, sizeof(tempbuff), 1), "((l/(m^n))*o)-p");
 }
 END_TEST
 
 START_TEST(inf_fp_p_p_v_div_w_p_pow_x_p_mul_p_y_sub_z_p)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("vw/x^yz-*", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 1), "((v/w)^x)*(y-z)");
+    ck_assert_str_eq(rpn_to_infix("vw/x^yz-*", sizeof(buff), buff, sizeof(buff), tempbuff, sizeof(tempbuff), 1), "((v/w)^x)*(y-z)");
 }
 END_TEST
 
 START_TEST(inf_fp_the_big_one)
 {
     memset(buff, 0, sizeof(buff));
-    ck_assert_str_eq(rpn_to_infix("ag+ba-c+cedf^*+^*", sizeof(buff), buff, sizeof(buff), scratchbuff, sizeof(scratchbuff), 1), "(a+g)*(((b-a)+c)^(c+(e*(d^f))))");
+    ck_assert_str_eq(rpn_to_infix("ag+ba-c+cedf^*+^*", sizeof(buff), buff, sizeof(buff), tempbuff, sizeof(tempbuff), 1), "(a+g)*(((b-a)+c)^(c+(e*(d^f))))");
 }
 END_TEST
 
@@ -228,7 +228,7 @@ Suite *inf_suite()
     TCase *tc_core;
     tc_core = tcase_create("Core");
     tcase_add_test(tc_core, inf_a_plus_b);
-    tcase_add_test(tc_core, inf_a_plus_b_small_scratch);
+    tcase_add_test(tc_core, inf_a_plus_b_small_temp);
     tcase_add_test(tc_core, inf_a_plus_b_small_buff);
     tcase_add_test(tc_core, inf_a_plus_b_plus_c);
     tcase_add_test(tc_core, inf_a_plus_b_minus_c);
