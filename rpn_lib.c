@@ -103,43 +103,45 @@ void swap(char *a, char *b)
     *b = c;
 }
 
-void handle_ops(char op, char *buff, int *buffindex, char *tempbuff, int *tempbufflen)
+bool handle_ops(char op, char *buff, int *buffindex, char *tempbuff, int tempbufflen, int *tempbuffindex)
 {
-    if (*tempbufflen > 0 && !op_less_than(op, peek(tempbuff, tempbufflen)))
+    if (*tempbuffindex > 0 && !op_less_than(op, peek(tempbuff, tempbuffindex)))
     {
-        PUSH(tempbuff, tempbufflen, op);
-        while (*tempbufflen > 1 && tempbuff[*tempbufflen - 2] != '(' && op_less_than(tempbuff[*tempbufflen - 2], tempbuff[*tempbufflen - 1]))
+        PUSH(tempbuff, tempbuffindex, op);
+        while (*tempbuffindex > 1 && tempbuff[*tempbuffindex - 2] != '(' && op_less_than(tempbuff[*tempbuffindex - 2], tempbuff[*tempbuffindex - 1]))
         {
-            swap(&tempbuff[*tempbufflen - 1], &tempbuff[*tempbufflen - 2]);
-            PUSH(buff, buffindex, POP(tempbuff, tempbufflen));
+            swap(&tempbuff[*tempbuffindex - 1], &tempbuff[*tempbuffindex - 2]);
+            PUSH(buff, buffindex, POP(tempbuff, tempbuffindex));
         }
     }
     else
     {
-        PUSH(tempbuff, tempbufflen, op);
+        RET_BUFF_OVERFLOW(tempbuffindex, tempbufflen);
+        PUSH(tempbuff, tempbuffindex, op);
     }
+    return true;
 }
 
-void unwind(char *buff, int *buffindex, char *tempbuff, int *tempbufflen)
+void unwind(char *buff, int *buffindex, char *tempbuff, int *tempbuffindex)
 {
     char op;
     do
     {
-        op = POP(tempbuff, tempbufflen);
+        op = POP(tempbuff, tempbuffindex);
         if (op != '(')
         {
             PUSH(buff, buffindex, op);
         }
-    } while (op != '(' && *tempbufflen > 0);
+    } while (op != '(' && *tempbuffindex > 0);
 }
 
-bool infix_to_rpn_impl(const char *infix, int infixmaxlen, int index, char *buff, int *buffindex, char *tempbuff, int *tempbufflen)
+bool infix_to_rpn_impl(const char *infix, int infixmaxlen, int index, char *buff, int *buffindex, char *tempbuff, int tempbufflen, int *tempbuffindex)
 {
     if (infix[index] == '\0' || index >= infixmaxlen)
     {
-        if (*tempbufflen > 0)
+        if (*tempbuffindex > 0)
         {
-            unwind(buff, buffindex, tempbuff, tempbufflen);
+            unwind(buff, buffindex, tempbuff, tempbuffindex);
         }
         return true;
     }
@@ -150,17 +152,20 @@ bool infix_to_rpn_impl(const char *infix, int infixmaxlen, int index, char *buff
     }
     else if (valid_operator(inf))
     {
-        handle_ops(inf, buff, buffindex, tempbuff, tempbufflen);
+        bool ret = handle_ops(inf, buff, buffindex, tempbuff, tempbufflen, tempbuffindex);
+        if (!ret)
+            return ret;
     }
     else if (valid_open_paren(inf))
     {
-        PUSH(tempbuff, tempbufflen, inf);
+        RET_BUFF_OVERFLOW(tempbuffindex, tempbufflen);
+        PUSH(tempbuff, tempbuffindex, inf);
     }
     else if (valid_close_paren(inf))
     {
-        unwind(buff, buffindex, tempbuff, tempbufflen);
+        unwind(buff, buffindex, tempbuff, tempbuffindex);
     }
-    bool ret = infix_to_rpn_impl(infix, infixmaxlen, index + 1, buff, buffindex, tempbuff, tempbufflen);
+    bool ret = infix_to_rpn_impl(infix, infixmaxlen, index + 1, buff, buffindex, tempbuff, tempbufflen, tempbuffindex);
     if (!ret)
         return ret;
     return true;
@@ -181,9 +186,9 @@ char *infix_to_rpn(const char *infix, int infixmaxlen, char *buff, int bufflen, 
     {
         MEMSET(tempbuff, tempbufflen);
     }
-    int sbl = 0;
+    int tempbuffindex = 0;
     int bl = 0;
-    bool ret = infix_to_rpn_impl(infix, infixmaxlen, 0, buff, &bl, tempbuff, &sbl);
+    bool ret = infix_to_rpn_impl(infix, infixmaxlen, 0, buff, &bl, tempbuff, tempbufflen, &tempbuffindex);
     if (dynamic)
     {
         free(tempbuff);

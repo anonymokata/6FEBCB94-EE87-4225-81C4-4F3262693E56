@@ -21,7 +21,15 @@ START_TEST(buff_len_check)
     ck_assert_ptr_eq(infix_to_rpn("a+b", 0, NULL, 0, NULL, 0), NULL);
 }
 END_TEST
+
 char buff[128], tempbuff[128];
+
+START_TEST(temp_buff_len_check)
+{
+    memset(buff, 0, sizeof(buff));
+    ck_assert_ptr_eq(infix_to_rpn("(a+(b-c))", 9, buff, sizeof(buff), tempbuff, 1), NULL);
+}
+END_TEST
 
 START_TEST(a_plus_b)
 {
@@ -206,6 +214,7 @@ Suite *rpn_suite()
     tcase_add_test(tc_core, infix_op_check);
     tcase_add_test(tc_core, infix_max_len_check);
     tcase_add_test(tc_core, buff_len_check);
+    tcase_add_test(tc_core, temp_buff_len_check);
     tcase_add_test(tc_core, a_plus_b);
     tcase_add_test(tc_core, a_plus_b_minus_c);
     tcase_add_test(tc_core, a_plus_p_b_minus_c_p);
