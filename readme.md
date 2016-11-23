@@ -1,4 +1,4 @@
-# specialized infix 2 rpn, rpn 2 infix converter
+# specialized infix 2 rpn, rpn 2 infix converter [![buddy pipeline](https://app.buddy.works/jdluzen/falcon-kata/pipelines/pipeline/38313/badge.svg?token=6960785c83a9afb56c91b248c478ca5205c7467a54f01fbd8f2ce66f431f18cc "buddy pipeline")](https://app.buddy.works/jdluzen/falcon-kata/pipelines/pipeline/38313)
 
 ## Environment
 - Ubuntu 14.04
