@@ -5,7 +5,7 @@
             "name": "C++ Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/rpn_tests",
+            "program": "${workspaceRoot}/rpn",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",

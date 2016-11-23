@@ -39,6 +39,15 @@ typedef int bool;
 #endif
 #define byte unsigned char
 
+typedef struct node
+{
+    struct node *lhs, *rhs;
+    char c;
+} node;
+
+bool walk_side(node *root, node *side, char *buff, int *buffindex, int bufflen, bool forceParens);
+bool walk(node *root, char *buff, int *buffindex, int bufflen, bool forceParens);
+
 char operator_lookup[] = {'^', '/', '*', '-', '+'};
 
 bool valid_operand(char c)
@@ -182,51 +191,41 @@ char *infix_to_rpn(const char *infix, int infixmaxlen, char *buff, int bufflen, 
     return ret ? buff : null;
 }
 
-typedef struct node
+bool walk_side(node *root, node *side, char *buff, int *buffindex, int bufflen, bool forceParens)
 {
-    struct node *lhs, *rhs;
-    char c;
-} node;
+    bool paren = false;
+    if (valid_operator(root->c) && valid_operator(side->c) && (op_less_than(root->c, side->c) || forceParens))
+    {
+        paren = true;
+        RET_BUFF_OVERFLOW(buffindex, bufflen);
+        PUSH(buff, buffindex, '(');
+    }
+    bool ret = walk(side, buff, buffindex, bufflen, forceParens);
+    if (!ret)
+        return ret;
+    if (paren)
+    {
+        RET_BUFF_OVERFLOW(buffindex, bufflen);
+        PUSH(buff, buffindex, ')');
+    }
+    return true;
+}
 
 bool walk(node *root, char *buff, int *buffindex, int bufflen, bool forceParens)
 {
     if (root->lhs != null)
     {
-        bool paren = false;
-        if (valid_operator(root->c) && valid_operator(root->lhs->c) && (op_less_than(root->c, root->lhs->c) || forceParens))
-        {
-            paren = true;
-            RET_BUFF_OVERFLOW(buffindex, bufflen);
-            PUSH(buff, buffindex, '(');
-        }
-        bool ret = walk(root->lhs, buff, buffindex, bufflen, forceParens);
+        bool ret = walk_side(root, root->lhs, buff, buffindex, bufflen, forceParens);
         if (!ret)
             return ret;
-        if (paren)
-        {
-            RET_BUFF_OVERFLOW(buffindex, bufflen);
-            PUSH(buff, buffindex, ')');
-        }
     }
     RET_BUFF_OVERFLOW(buffindex, bufflen);
     PUSH(buff, buffindex, root->c);
     if (root->rhs != null)
     {
-        bool paren = false;
-        if (valid_operator(root->c) && valid_operator(root->rhs->c) && (op_less_than(root->c, root->rhs->c) || forceParens))
-        {
-            paren = true;
-            RET_BUFF_OVERFLOW(buffindex, bufflen);
-            PUSH(buff, buffindex, '(');
-        }
-        bool ret = walk(root->rhs, buff, buffindex, bufflen, forceParens);
+        bool ret = walk_side(root, root->rhs, buff, buffindex, bufflen, forceParens);
         if (!ret)
             return ret;
-        if (paren)
-        {
-            RET_BUFF_OVERFLOW(buffindex, bufflen);
-            PUSH(buff, buffindex, ')');
-        }
     }
     free(root);
     return true;
